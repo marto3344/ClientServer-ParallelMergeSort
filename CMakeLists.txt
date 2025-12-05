@@ -10,5 +10,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- 1. Конфигурация за Клиента ---
 # Създава изпълним файл "client_app" от сорс кода в Client/main.cpp
-add_executable(client_app Client/main.cpp)
+add_executable(client Client/main.cpp)
 
