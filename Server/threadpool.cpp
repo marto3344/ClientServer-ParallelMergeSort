@@ -7,4 +7,5 @@ ThreadPool::ThreadPool(size_t numThreads)
 
 ThreadPool::~ThreadPool()
 {
+    Stop();
 }

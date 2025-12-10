@@ -32,4 +32,11 @@ class ThreadPool
 template <class T>
 inline auto ThreadPool::Enqueue(T task)
 {
+    auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
+    {
+        std::unique_lock<std::mutex> lock{nEventMutex};
+        tasks.emplace([=]{ (*wrapper)(); });
+    }
+    mEventVar.notify_one();
+    return wrapper->get_future();
 }

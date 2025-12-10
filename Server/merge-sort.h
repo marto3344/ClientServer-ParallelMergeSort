@@ -7,6 +7,6 @@ void MergeSortRec(std::vector<double>& arr, std::vector<double>& copy, int l, in
 
 void MergeSort(std::vector<double>& arr);
 
-void ParallelMergeSortRec(std::vector<double>& arr, std::vector<double>& copy, int l, int r);
+void ParallelMergeSortRec(std::vector<double>& arr, std::vector<double>& copy, int l, int r, int depth);
 
-void ParallelMergeSort(std::vector<double>arr);
+void ParallelMergeSort(std::vector<double>arr, size_t n_threads);
