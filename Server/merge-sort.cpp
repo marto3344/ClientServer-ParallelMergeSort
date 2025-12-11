@@ -1,4 +1,8 @@
 #include "merge-sort.h"
+#include<thread>
+#include <cmath>
+
+#define THRESHHOLD 5000
 
 void Merge(std::vector<double> &arr, std::vector<double> &copy, int l, int m, int r)
 {
@@ -40,6 +44,28 @@ void MergeSortRec(std::vector<double> &arr, std::vector<double> &copy, int l, in
 void MergeSort(std::vector<double> &arr)
 {
     size_t size = arr.size();
-    std::vector<double> copy (size, 0);
+    std::vector<double> copy (size);
     MergeSortRec(arr, copy, 0 , size);
+}
+
+void ParallelMergeSortRec(std::vector<double> &arr, std::vector<double> &copy, int l, int r, int depth)
+{
+    if(r - l <= THRESHHOLD || depth  == 0)
+    {
+        MergeSortRec(arr, copy, l, r);
+        return;
+    }
+    int m = (l + r)/2;
+    std::thread leftPart([l, m, depth, &arr, &copy]{ParallelMergeSortRec(arr, copy, l, m, depth - 1);});
+    ParallelMergeSortRec(arr,copy,m,r, depth-1);
+    leftPart.join();
+    Merge(arr,copy,l,m,r);
+}
+
+void ParallelMergeSort(std::vector<double> arr, size_t n_threads)
+{
+    int depth = std::floor(std::log2((double)n_threads));
+    size_t size = arr.size();
+    std::vector<double> copy (size);
+    ParallelMergeSortRec(arr, copy, 0 , size, depth);
 }
