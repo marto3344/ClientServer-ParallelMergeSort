@@ -2,7 +2,7 @@
 #include<thread>
 #include <cmath>
 
-#define THRESHHOLD 5000
+#define THRESHHOLD 10000
 
 void Merge(std::vector<double> &arr, std::vector<double> &copy, int l, int m, int r)
 {
@@ -12,7 +12,7 @@ void Merge(std::vector<double> &arr, std::vector<double> &copy, int l, int m, in
     
     for (int i = l; i < r; i++)
     {
-        if(k >= r  || (k < r &&  l < m && arr[j] < arr[k]))
+        if(k >= r  || (k < r &&  j < m && arr[j] < arr[k]))
         {
             copy[i] = arr[j];
             j++;
@@ -62,10 +62,11 @@ void ParallelMergeSortRec(std::vector<double> &arr, std::vector<double> &copy, i
     Merge(arr,copy,l,m,r);
 }
 
-void ParallelMergeSort(std::vector<double> arr, size_t n_threads)
+void ParallelMergeSort(std::vector<double>& arr, size_t n_threads)
 {
-    int depth = std::floor(std::log2((double)n_threads));
+    int depth = std::floor(std::log2((double)n_threads)) + 1;
     size_t size = arr.size();
+    
     std::vector<double> copy (size);
     ParallelMergeSortRec(arr, copy, 0 , size, depth);
 }
