@@ -5,7 +5,7 @@
 #include<sys/socket.h>
 #include <netinet/in.h>
 #include <cstring>
-#include "server.hpp"
+#include "server.h"
 
 Server::Server() : server_fd(-1), tpool(TPOOL_SIZE) {}
 
@@ -68,11 +68,10 @@ int Server::Initialize()
     }
 
     using namespace std;
-    cout<<"\n╔════════════════════════════════════════════════════════╗\n";
-    cout<<"║     PARALLEL MERGE SORT SERVER                       ║\n" ;
+    cout<<"╔════════════════════════════════════════════════════════╗\n";
+    cout<<"║               PARALLEL MERGE SORT SERVER               ║\n" ;
     cout<<"╚════════════════════════════════════════════════════════╝\n";
-    cout<<"Server started successfully on port:" << PORT <<'\n';    
-    cout<<"Worker threads count: "<<TPOOL_SIZE;
+    cout<<"Server started successfully on port:" << PORT <<'\n';
     return 0;
 }
 
@@ -84,9 +83,9 @@ void Server::Run()
         return;
     }
 
-    while (1)
-    {
-        //TODO: Selector logic
-    }
+    // while (1)
+    // {
+    //     //TODO: Selector logic
+    // }
     
 }

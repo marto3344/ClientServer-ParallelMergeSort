@@ -7,6 +7,7 @@
 #include<mutex>
 #include<condition_variable>
 #include<atomic>
+#include<future>
 
 class ThreadPool
 {
@@ -38,6 +39,6 @@ inline auto ThreadPool::Enqueue(T task)
         std::unique_lock<std::mutex> lock{nEventMutex};
         tasks.emplace([=]{ (*wrapper)(); });
     }
-    mEventVar.notify_one();
+    nEventVar.notify_one();
     return wrapper->get_future();
 }
