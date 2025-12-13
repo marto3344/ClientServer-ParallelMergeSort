@@ -86,7 +86,7 @@ void Server::HandleClient(int client_fd)
         return;
     }
     ConvertToHostByte(arr);
-    //ParallelMergeSort(arr,n_threads);
+    ParallelMergeSort(arr,n_threads);
     ConvertToNetworkByte(arr);
     if (SendArray(arr, client_fd) == -1)
     {

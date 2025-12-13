@@ -4,7 +4,7 @@
 
 #define THRESHHOLD 10000
 
-void Merge(std::vector<double> &arr, std::vector<double> &copy, int l, int m, int r)
+void Merge(std::vector<int> &arr, std::vector<int> &copy, int l, int m, int r)
 {
     int j, k;
     j = l;
@@ -30,7 +30,7 @@ void Merge(std::vector<double> &arr, std::vector<double> &copy, int l, int m, in
     }
 }
 
-void MergeSortRec(std::vector<double> &arr, std::vector<double> &copy, int l, int r)
+void MergeSortRec(std::vector<int> &arr, std::vector<int> &copy, int l, int r)
 {
     if (r - l <= 1)
         return;
@@ -41,14 +41,14 @@ void MergeSortRec(std::vector<double> &arr, std::vector<double> &copy, int l, in
     Merge(arr,copy,l,m,r);
 }
 
-void MergeSort(std::vector<double> &arr)
+void MergeSort(std::vector<int> &arr)
 {
     size_t size = arr.size();
-    std::vector<double> copy (size);
+    std::vector<int> copy (size);
     MergeSortRec(arr, copy, 0 , size);
 }
 
-void ParallelMergeSortRec(std::vector<double> &arr, std::vector<double> &copy, int l, int r, int depth)
+void ParallelMergeSortRec(std::vector<int> &arr, std::vector<int> &copy, int l, int r, int depth)
 {
     if(r - l <= THRESHHOLD || depth  == 0)
     {
@@ -62,11 +62,16 @@ void ParallelMergeSortRec(std::vector<double> &arr, std::vector<double> &copy, i
     Merge(arr,copy,l,m,r);
 }
 
-void ParallelMergeSort(std::vector<double>& arr, size_t n_threads)
+void ParallelMergeSort(std::vector<int>& arr, size_t n_threads)
 {
-    int depth = std::floor(std::log2((double)n_threads)) + 1;
+    if (n_threads == 1)
+    {
+        MergeSort(arr);
+        return;    
+    }
+
     size_t size = arr.size();
-    
-    std::vector<double> copy (size);
+    std::vector<int> copy (size);
+    int depth = std::floor(std::log2((double)n_threads)) + 1;
     ParallelMergeSortRec(arr, copy, 0 , size, depth);
 }
