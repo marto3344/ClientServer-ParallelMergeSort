@@ -60,6 +60,22 @@ int Server::SetReuseAddr(int sockfd)
     return res;
 }
 
+int Server::Initialize()
+{
+    server_fd = CreateSocket();
+    if (server_fd == -1) {
+            return -1;
+    }
+
+    using namespace std;
+    cout<<"\n╔════════════════════════════════════════════════════════╗\n";
+    cout<<"║     PARALLEL MERGE SORT SERVER                       ║\n" ;
+    cout<<"╚════════════════════════════════════════════════════════╝\n";
+    cout<<"Server started successfully on port:" << PORT <<'\n';    
+    cout<<"Worker threads count: "<<TPOOL_SIZE;
+    return 0;
+}
+
 void Server::Run()
 {
     if(server_fd == -1)
