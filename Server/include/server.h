@@ -20,6 +20,10 @@ class Server
         int CreateSocket();
         int SetReuseAddr(int sockfd);
         void HandleClient(int client_fd);
+        int  RecieveArray(std::vector<int>& arr, int client_fd);
+        int SendArray(std::vector<int>& arr, int client_fd);
+        void ConvertToHostByte(std:: vector<int>& arr);
+        void ConvertToNetworkByte(std::vector<int>& arr);
 };
 
 
