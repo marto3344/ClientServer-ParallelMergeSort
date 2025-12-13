@@ -6,6 +6,7 @@
 #include <thread>
 #include<mutex>
 #include<condition_variable>
+#include<atomic>
 
 class ThreadPool
 {
@@ -23,10 +24,10 @@ class ThreadPool
     std::condition_variable nEventVar;
 	std::mutex nEventMutex;
     std::queue<Task> tasks;
-    bool isStopped = false;
+    std::atomic<bool> isStopped = false;
     
     void Start(size_t numThreads);
-    void Stop();
+    void Stop() noexcept;
 };
 
 template <class T>

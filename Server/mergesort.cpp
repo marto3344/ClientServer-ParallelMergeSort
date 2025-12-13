@@ -1,6 +1,6 @@
-#include "merge-sort.h"
 #include<thread>
 #include <cmath>
+#include "mergesort.h"
 
 #define THRESHHOLD 10000
 
