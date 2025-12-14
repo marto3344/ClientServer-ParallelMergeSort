@@ -104,11 +104,78 @@ int inputFromBinFile(const string& fname, vector<int>& arr)
     }
     size_t arrsize;
     infile.read(reinterpret_cast<char*>(&arrsize), sizeof(arrsize));
-    cout<<arrsize;
     arr.resize(arrsize);
     infile.read(reinterpret_cast<char*>(arr.data()), arrsize*sizeof(int));
+    if(infile.bad())
+    {
+        cerr << "[Client] Failed to read data from " << fname << "\n";
+        infile.close();
+        return -1;
+    }
     infile.close();
     return 0;
+}
+
+int outputToFile(const string& fname, const vector<int>& arr)
+{
+    ofstream outfile(fname);
+    if (!outfile.is_open())
+    {
+        cerr << "[Client] Cannot open file: " << fname << " for writing!\n";
+        return -1;
+    }
+    for (const auto& val : arr)
+    {
+        outfile << val << "\n";
+    }
+    if (outfile.bad())
+    {
+        cerr << "[Client] Failed to write data to " << fname << "\n";
+        outfile.close();
+        return -1;
+    }
+    outfile.close();
+    return 0;
+}
+
+void outputArray(const vector<int>& arr)
+{
+    int arr_output_option = -1;
+    while (arr_output_option != 2)
+    {
+        cout<<"\nHow do you want to output the result?\n";
+        cout<<"Press 0 to output it in txt file  \n";
+        cout<<"Press 1 view output in the standart output\n";
+        cout<<"Press 2 to exit\n";
+        cin>>arr_output_option;
+        if(arr_output_option == 0)
+        {   
+            string fname;
+            cout<<"Enter file name:\n";
+            cin>>fname;
+            if(outputToFile(fname, arr) == -1)
+            {
+                cerr<<"File error\n";
+                continue;
+            }
+            cout<<"Successfully saved result to "<<fname<<'\n';
+        }
+        else if (arr_output_option == 1)
+        {
+           for(auto val: arr)
+                cout<<val<<' ';
+            cout<<'\n';
+        }
+        else if (arr_output_option == 2)
+        {
+            cout<<"Bye!\n";
+            return;
+        }
+        else{
+            cout<<"Invalid option: "<<arr_output_option<<'\n';
+        }
+    }
+
 }
 
 int main()
@@ -119,7 +186,7 @@ int main()
     cout<<"Enter the number of threads!\n";
     cin>>nThreads;
     int arr_input_option = -1;
-    cout<<"How you want to input the array?\n";
+    cout<<"How do you want to input the array?\n";
     cout<<"Press 0 to input from binary file \n";
     cout<<"Press 1 to input from the standart input\n";
     cin>>arr_input_option;
@@ -162,6 +229,5 @@ int main()
     cout<<"Info sent successfully!\n";  
     ReceiveSortedArr(sockfd,arr, arr.size());  
     cout<<"Array recieved successfully!\n";
-    for (auto val : arr)
-        cout<<val<<' ';
+    outputArray(arr);
 }   
