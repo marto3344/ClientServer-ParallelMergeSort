@@ -89,7 +89,6 @@ void Server::HandleClient(int client_fd)
     ssize_t bytes;
 
     bytes = read(client_fd,&n_threads, sizeof(n_threads));
-    std::cout<<"Recieved number of threads!";
     if(bytes <= 0)
     {
         perror("[Worker][HandleClient] Can't read the number of threads!");
