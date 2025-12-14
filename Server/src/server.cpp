@@ -84,10 +84,11 @@ int Server::SetClientTimeout(int client_fd, int seconds)
 
 void Server::HandleClient(int client_fd)
 {
-    int arrsize, n_threads;
+    size_t arrsize, n_threads;
     ssize_t bytes;
 
     bytes = read(client_fd,&n_threads, sizeof(n_threads));
+    std::cout<<"Recieved number of threads!";
     if(bytes <= 0)
     {
         perror("[Worker][HandleClient] Can't read the number of threads!");
@@ -120,7 +121,7 @@ int Server::RecieveArray(std::vector<int> &arr, int client_fd)
     size_t total_bytes, bytes_received;
     total_bytes = arr.size()*sizeof(int);
 
-    bytes_received = recv(client_fd, (char *) arr.data(), total_bytes, MSG_WAITALL);
+    bytes_received = recv(client_fd, reinterpret_cast<char *>(arr.data()), total_bytes, MSG_WAITALL);
     if (bytes_received != total_bytes)
     {
         std::cerr << "[Worker][RecieveArray] Error! Expected " << total_bytes 
@@ -229,7 +230,7 @@ void Server::Run()
                     perror("[Server] Accept error!");
                     continue;
                 }
-                if(SetClientTimeout(client_fd, 10) == -1)
+                if(SetClientTimeout(client_fd, 30) == -1)
                 {
                     continue;
                 }
