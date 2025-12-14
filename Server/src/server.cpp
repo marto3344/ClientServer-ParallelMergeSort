@@ -3,18 +3,23 @@
 #include<unistd.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<sys/epoll.h>
 #include <netinet/in.h>
 #include <cstring>
 #include "server.h"
 #include"mergesort.h"
 
-Server::Server() : server_fd(-1), tpool(TPOOL_SIZE) {}
+Server::Server() : server_fd(-1), epoll_fd(-1), tpool(TPOOL_SIZE) {}
 
 Server::~Server()
 {
     if(server_fd != -1)
     {
         close(server_fd);
+    }
+    if(epoll_fd != -1)
+    {
+        close(epoll_fd);
     }
 }
 
@@ -61,6 +66,22 @@ int Server::SetReuseAddr(int sockfd)
     return res;
 }
 
+int Server::SetClientTimeout(int client_fd, int seconds)
+{
+    struct timeval timeout;
+    timeout.tv_sec = seconds;
+    timeout.tv_usec = 0;
+    if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+        perror("[Server] Failed to set recv timeout");
+        return -1;
+    }
+    if (setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+        perror("[Server] Failed to set send timeout");
+        return -1;
+    }
+    return 0;
+}
+
 void Server::HandleClient(int client_fd)
 {
     int arrsize, n_threads;
@@ -69,13 +90,13 @@ void Server::HandleClient(int client_fd)
     bytes = read(client_fd,&n_threads, sizeof(n_threads));
     if(bytes <= 0)
     {
-        perror("[Worker] Can't read the number of threads!");
+        perror("[Worker][HandleClient] Can't read the number of threads!");
         return;
     }
     bytes = read(client_fd, &arrsize, sizeof(arrsize));
     if(bytes <= 0)
     {
-        perror("[Worker] Can't read the size of the array!");
+        perror("[Worker][HandleClient] Can't read the size of the array!");
         return;
     }
 
@@ -92,7 +113,6 @@ void Server::HandleClient(int client_fd)
     {
         close(client_fd);
     }
-
 }
 
 int Server::RecieveArray(std::vector<int> &arr, int client_fd)
@@ -103,11 +123,10 @@ int Server::RecieveArray(std::vector<int> &arr, int client_fd)
     bytes_received = recv(client_fd, (char *) arr.data(), total_bytes, MSG_WAITALL);
     if (bytes_received != total_bytes)
     {
-        std::cerr << "[Worker] Error! Expected " << total_bytes 
+        std::cerr << "[Worker][RecieveArray] Error! Expected " << total_bytes 
         << " bytes but received only " << bytes_received << '\n';
         return -1;
     }
-
     return 0;
 }
 
@@ -155,6 +174,11 @@ int Server::Initialize()
             return -1;
     }
 
+    epoll_fd = epoll_create1(0);
+    if (epoll_fd == -1) {
+        perror("[Server] Epoll create error");
+        return -1;
+    }
     using namespace std;
     cout<<"╔════════════════════════════════════════════════════════╗\n";
     cout<<"║               PARALLEL MERGE SORT SERVER               ║\n" ;
@@ -170,10 +194,48 @@ void Server::Run()
         std::cerr<<"[Server] Invlaid socket file descriptor!. Please use Initialize() before Run()!\n";
         return;
     }
+    if(epoll_fd == -1)
+    {
+        std::cerr<<"[Server] Invlaid epoll file descriptor!. Please use Initialize() before Run()!\n";
+        return;
+    }
 
-    // while (1)
-    // {
-    //     //TODO: Selector logic
-    // }
+    const int MAX_EVENTS = 5;
+    epoll_event event;
+    event.events = EPOLLIN;
+    event.data.fd = server_fd;
+
+    if(epoll_ctl(epoll_fd,EPOLL_CTL_ADD,server_fd,&event) == -1)
+    {
+        perror("[Server] Epoll registration failed!");
+        return;
+    }
+    epoll_event events_arr [MAX_EVENTS];
+    while (1)
+    {
+        int n = epoll_wait(epoll_fd,events_arr, MAX_EVENTS, -1);
+        if(n == -1)
+        {
+            perror("[Server] Epoll wait failiure!");
+            return;
+        }
+        for (int i = 0; i < n; i++)
+        {
+            if(events_arr[i].data.fd == server_fd)
+            {
+                int client_fd = accept(server_fd, nullptr, nullptr);
+                if(client_fd == -1)
+                {
+                    perror("[Server] Accept error!");
+                    continue;
+                }
+                if(SetClientTimeout(client_fd, 10) == -1)
+                {
+                    continue;
+                }
+                tpool.Enqueue([this, client_fd]{HandleClient(client_fd);});    
+            }
+        }  
+    }
     
 }
