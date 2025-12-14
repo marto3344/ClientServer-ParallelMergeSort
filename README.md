@@ -49,4 +49,9 @@ make
 g++ generate_random_vec.cpp -o generator.out
 ./generator.out vec1 1000000
 ```
+### Резултат с 1 нишка:
+![Резултат с 1 нишка](assets/Screenshot_1.png)
+### Резултат с 4 нишки:
+![Резултат с 4 нишки](assets/Screenshot_2.png)
+
 ## За повече  детайли, вижте [Documentation.md](Documentation.md).
