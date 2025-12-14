@@ -7,6 +7,7 @@
 #include<sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include<chrono>
 
 using namespace std;
 
@@ -67,7 +68,6 @@ int sendAllInfo(int sockfd, size_t n_threads, const vector<int>& arr)
         cerr<<"[Client] Failed to send size of the array";
         return -1;
     }
-    cout<<"Sending array!\n";
     if(sendData(sockfd, arr.data(), arr.size()*sizeof(int))  == -1)
     {
         cerr<<"[Client] Failed to send the array";
@@ -225,9 +225,23 @@ int main()
     {
         return 1;
     }
-    sendAllInfo(sockfd,nThreads, arr);
-    cout<<"Info sent successfully!\n";  
-    ReceiveSortedArr(sockfd,arr, arr.size());  
-    cout<<"Array recieved successfully!\n";
+
+    cout << "[Client] Connected. Starting request...\n";
+    auto start = std::chrono::high_resolution_clock::now();
+    if(sendAllInfo(sockfd,nThreads, arr) == -1)
+    {
+        return 1;
+    }
+    if(ReceiveSortedArr(sockfd,arr, arr.size()) == -1)
+    {
+        return 1;
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    cout<<"\n════════════════════════════════════════════════════════\n";
+    cout<<"     Array recieved successfully!\n";
+    cout<<"     Total Request Time: " << diff.count() << " s\n";  
+    cout<< "════════════════════════════════════════════════════════\n";
+    close(sockfd);
     outputArray(arr);
 }   
