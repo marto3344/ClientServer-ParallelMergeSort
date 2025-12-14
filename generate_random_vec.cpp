@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     }
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<int> distrib(1, 10000);
+    uniform_int_distribution<int> distrib(1, 1000000);
     vector<int> vec(size);
     for(auto& val : vec)
     {
