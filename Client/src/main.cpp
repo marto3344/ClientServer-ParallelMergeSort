@@ -67,7 +67,7 @@ int sendAllInfo(int sockfd, size_t n_threads, const vector<int>& arr)
         cerr<<"[Client] Failed to send size of the array";
         return -1;
     }
-    cout<<"Sending array!";
+    cout<<"Sending array!\n";
     if(sendData(sockfd, arr.data(), arr.size()*sizeof(int))  == -1)
     {
         cerr<<"[Client] Failed to send the array";
@@ -94,26 +94,28 @@ int ReceiveSortedArr(int sockfd, std::vector<int>& data, size_t arr_size)
     return 0;
 }
 
-void inputFromBinFile(const string& fname, vector<int>& arr)
+int inputFromBinFile(const string& fname, vector<int>& arr)
 {
-    ifstream infile(fname, std::ios::binary | std::ios::ate);
+    ifstream infile(fname, std::ios::binary);
     if (!infile) 
     {
         cerr<<"Error opening the file\n";
-        return;
+        return -1;
     }
-    std::streamsize file_size = infile.tellg();
-    infile.seekg(0, std::ios::beg);
-    size_t array_size = file_size / sizeof(int);
-    arr.resize(array_size);
-    infile.read(reinterpret_cast<char*>(arr.data()), file_size);
+    size_t arrsize;
+    infile.read(reinterpret_cast<char*>(&arrsize), sizeof(arrsize));
+    cout<<arrsize;
+    arr.resize(arrsize);
+    infile.read(reinterpret_cast<char*>(arr.data()), arrsize*sizeof(int));
+    infile.close();
+    return 0;
 }
 
 int main()
 {
     const char * addr = "127.0.0.1";
     int port =  3000;
-    size_t nThreads;
+    size_t nThreads, arrsize;
     cout<<"Enter the number of threads!\n";
     cin>>nThreads;
     int arr_input_option = -1;
@@ -128,10 +130,22 @@ int main()
         string fname;
         cout<<"Enter binary file name:\n";
         cin>>fname;
-        inputFromBinFile(fname, arr);
+        if(inputFromBinFile(fname, arr) == -1)
+        {
+            return 1;
+        }
     }
     else if (arr_input_option == 1)
     {
+        cout<<"Enter array size:\n";
+        cin>>arrsize;
+        arr.resize(arrsize);
+        for (size_t i = 0; i < arrsize; i++)
+        {
+            int val;
+            cin>>val;
+            arr[i] = val;
+        }
         
     }
     else
@@ -145,8 +159,9 @@ int main()
         return 1;
     }
     sendAllInfo(sockfd,nThreads, arr);
-    cout<<"Info sent successfully!";  
+    cout<<"Info sent successfully!\n";  
     ReceiveSortedArr(sockfd,arr, arr.size());  
+    cout<<"Array recieved successfully!\n";
     for (auto val : arr)
         cout<<val<<' ';
 }   

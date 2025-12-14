@@ -60,8 +60,7 @@ void ParallelMergeSortRec(std::vector<int> &arr, std::vector<int> &copy, int l, 
         ParallelMergeSortRec(arr, copy, l, m, depth - 1);
     });
     ParallelMergeSortRec(arr,copy,m,r, depth-1);
-    if(leftPart.joinable())
-        leftPart.join();
+    leftPart.join();
     Merge(arr,copy,l,m,r);
 }
 
@@ -75,6 +74,6 @@ void ParallelMergeSort(std::vector<int>& arr, size_t n_threads)
 
     size_t size = arr.size();
     std::vector<int> copy (size);
-    int depth = static_cast<int>(std::log2(static_cast<double>(n_threads)));
+    int depth = static_cast<int>(std::log2((double)(n_threads)));
     ParallelMergeSortRec(arr, copy, 0 , size, depth);
 }
