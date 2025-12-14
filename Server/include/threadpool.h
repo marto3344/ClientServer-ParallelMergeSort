@@ -21,11 +21,11 @@ class ThreadPool
     ~ThreadPool();
     
     private:
-    std::vector<std::thread> nThreads;
-    std::condition_variable nEventVar;
-	std::mutex nEventMutex;
+    std::vector<std::thread> workers;
+    std::condition_variable eventVar;
+	std::mutex eventMutex;
     std::queue<Task> tasks;
-    std::atomic<bool> isStopped = false;
+    bool isStopped = false;
     
     void Start(size_t numThreads);
     void Stop() noexcept;
@@ -36,9 +36,9 @@ inline auto ThreadPool::Enqueue(T task)
 {
     auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
     {
-        std::unique_lock<std::mutex> lock{nEventMutex};
+        std::unique_lock<std::mutex> lock (eventMutex);
         tasks.emplace([=]{ (*wrapper)(); });
     }
-    nEventVar.notify_one();
+    eventVar.notify_one();
     return wrapper->get_future();
 }

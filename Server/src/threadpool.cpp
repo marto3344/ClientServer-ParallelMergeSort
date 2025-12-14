@@ -12,10 +12,37 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Start(size_t numThreads)
 {
-    //TODO: Implement start logic
+    for(int i = 0 ; i < numThreads; ++i)
+    {
+        workers.emplace_back(
+            [=]{
+                while (1)
+                {
+                    Task task;
+                    {
+                        std::unique_lock<std::mutex> lock (eventMutex);
+                        eventVar.wait(lock,[=] { return isStopped || !tasks.empty();});
+                        if(isStopped && tasks.empty())
+                            break;
+                        task = std::move(tasks.front());
+                        tasks.pop();
+                    }
+                    task();
+                }
+            }
+        );
+    }
 }
 
 void ThreadPool::Stop() noexcept
 {
-    //TODO: Implement stop logic
+    {
+        std::unique_lock<std::mutex> lock (eventMutex);
+        isStopped = true;
+    }
+    eventVar.notify_all();
+    for(auto& thread : workers)
+    {
+        thread.join();
+    }
 }
