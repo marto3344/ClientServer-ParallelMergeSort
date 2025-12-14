@@ -8,6 +8,7 @@
 #include <cstring>
 #include "server.h"
 #include"mergesort.h"
+#include <arpa/inet.h>
 
 Server::Server() : server_fd(-1), epoll_fd(-1), tpool(TPOOL_SIZE) {}
 
@@ -224,12 +225,20 @@ void Server::Run()
         {
             if(events_arr[i].data.fd == server_fd)
             {
-                int client_fd = accept(server_fd, nullptr, nullptr);
+                sockaddr_in client_addr;
+                socklen_t client_len = sizeof(client_addr);
+                int client_fd = accept(server_fd, (sockaddr*)&client_addr, &client_len);
                 if(client_fd == -1)
                 {
                     perror("[Server] Accept error!");
                     continue;
                 }
+                char client_ip[INET_ADDRSTRLEN];
+                inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
+                int client_port = ntohs(client_addr.sin_port);
+                std::cout << "[Server] New connection from " << client_ip 
+                          << ":" << client_port 
+                          << " (fd: " << client_fd << ")" <<'\n';
                 if(SetClientTimeout(client_fd, 30) == -1)
                 {
                     continue;
